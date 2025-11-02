@@ -1,0 +1,251 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{{ title }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+    <style>
+      .lang-toggle { margin: 1rem 0; }
+      .doc { max-width: 900px; margin: 0 auto; }
+      pre { background: #111; padding: 12px; overflow: auto; }
+      code { color: #0ff; }
+    </style>
+  </head>
+  <body>
+    <main class="doc">
+      <h1>{{ title }}</h1>
+
+      <div class="lang-toggle">
+        <button id="btn-en">English</button>
+        <button id="btn-pt">PT-BR</button>
+      </div>
+
+      <section id="doc-en">
+        <h2>Instant Gaming API — Detailed Documentation</h2>
+        <p><a style="color: inherit;" href="/search">Click here</a> to search page</p>
+
+        <h3>Overview</h3>
+        <ul>
+          <li>Purpose: Query Instant Gaming using only a query string, optionally enriching with Latin America prices.</li>
+          <li>Framework: Flask · Entry: <code>app.py</code> · Templates: <code>templates/</code> · Static: <code>static/</code> · Logic: <code>reqs.py</code></li>
+          <li>Language: English headers (<code>Accept-Language: en-US,en;q=0.9</code>).</li>
+        </ul>
+
+        <h3>Routes</h3>
+        <ul>
+          <li><code>GET /</code> — Home with embedded docs.</li>
+          <li><code>GET /search</code> — UI to search games.</li>
+          <li><code>GET /health</code> — Health check.</li>
+        </ul>
+
+        <h3>API Endpoint</h3>
+        <p><code>GET /api/search?query=QUERY</code></p>
+        <ul>
+          <li><code>query</code> (required): game name (e.g., <code>elden ring</code>).</li>
+          <li><code>latam_priority</code> (optional): <code>1</code> default enrich, <code>0</code> skip for speed.</li>
+          <li><code>max_details</code> (optional, int): enriched items count (default <code>6</code>).</li>
+          <li><code>concurrency</code> (optional, int): worker threads (default <code>6</code>).</li>
+          <li>Legacy: <code>/api/search/&lt;game&gt;</code> redirects to the query variant.</li>
+          <li>IG URL (no filters): <code>https://www.instant-gaming.com/pt/pesquisar/?query=QUERY</code></li>
+        </ul>
+
+        <h3>Response</h3>
+        <pre><code>
+[
+	{
+		"link": "https://www.instant-gaming.com/pt/awdadwadwd",
+		"origin": "Instant Gaming",
+		"price": "R$ 25,67",
+		"title": awd"
+	},
+	{
+		"link": "https://www.instant-gaming.com/pt/awdadwadwad",
+		"origin": "Instant Gaming",
+		"price": "R$ 158,47",
+		"title": "awd"
+	},
+	{
+		"link": "https://www.instant-gaming.com/pt/awdadwad",
+		"origin": "Instant Gaming",
+		"price": "R$ 11,03",
+		"title": "awd"
+	},
+	{
+		"link": "https://www.instant-gaming.com/pt/awdawdawda",
+		"origin": "Instant Gaming",
+		"price": "R$ 20,50",
+		"title": "awd"
+	}
+]</code></pre>
+        <p>Empty results: <code>[]</code>. Missing query returns <code>{"error":"Missing 'query' parameter"}</code> with HTTP 400.</p>
+
+        <h3>Examples</h3>
+        <pre><code id="example-en"></code></pre>
+
+        <h3>Performance & Behavior</h3>
+        <ul>
+          <li>Reuses connections with <code>requests.Session</code>.</li>
+          <li>Optional LATAM enrichment via concurrent product page requests.</li>
+          <li>Timeouts: <code>20s</code> search, <code>12s</code> products.</li>
+          <li>Filters (platform/type/gametype) are disabled for now.</li>
+          <li>Currency may vary depending on deployment locale.</li>
+        </ul>
+
+        <h3>Project Structure</h3>
+        <ul>
+          <li><code>app.py</code> — routes</li>
+          <li><code>reqs.py</code> — search/enrichment</li>
+          <li><code>templates/</code> — <code>index.html</code>, <code>search.html</code></li>
+          <li><code>static/</code> — assets</li>
+        </ul>
+
+        <h3>Run Locally (Windows)</h3>
+        <pre><code>git clone https://github.com/diogolourencodev/latamgaming.git
+cd latamgaming
+python -m venv .venv
+.\\.venv\\Scripts\\Activate.ps1
+pip install -r requirements.txt
+python app.py
+# open http://127.0.0.1:5000</code></pre>
+
+        <h3>Deploy (Vercel)</h3>
+        <ul>
+          <li>Connect GitHub, import repo; Vercel detects Flask.</li>
+          <li>Set root if needed and deploy; test the endpoint.</li>
+        </ul>
+
+        <h3>Roadmap</h3>
+        <ul>
+          <li>Reintroduce filters (platform/type/gametype).</li>
+          <li>Add <code>POST /api/search</code> with JSON body.</li>
+          <li>Cache, pagination, currency normalization.</li>
+          <li>Bilingual filter-ready <code>/search</code> UI.</li>
+        </ul>
+      </section>
+
+      <section id="doc-pt" style="display:none">
+        <h2>Instant Gaming API — Documentação Detalhada</h2>
+
+        <h3>Visão Geral</h3>
+        <ul>
+          <li>Propósito: Consultar Instant Gaming usando apenas a string de pesquisa, opcionalmente enriquecendo com preços da América Latina.</li>
+          <li>Framework: Flask · Entrada: <code>app.py</code> · Templates: <code>templates/</code> · Estático: <code>static/</code> · Lógica: <code>reqs.py</code></li>
+          <li>Idioma: Cabeçalhos em inglês (<code>Accept-Language: en-US,en;q=0.9</code>).</li>
+        </ul>
+
+        <h3>Rotas</h3>
+        <ul>
+          <li><code>GET /</code> — Início com docs incorporadas.</li>
+          <li><code>GET /search</code> — UI para buscar jogos.</li>
+          <li><code>GET /health</code> — Verificação de saúde.</li>
+        </ul>
+
+        <h3>Endpoint da API</h3>
+        <p><code>GET /api/search?query=QUERY</code></p>
+        <ul>
+          <li><code>query</code> (obrigatório): nome do jogo (ex.: <code>elden ring</code>).</li>
+          <li><code>latam_priority</code> (opcional): <code>1</code> padrão enriquece, <code>0</code> para velocidade.</li>
+          <li><code>max_details</code> (opcional, int): quantidade de itens enriquecidos (padrão <code>6</code>).</li>
+          <li><code>concurrency</code> (opcional, int): número de threads (padrão <code>6</code>).</li>
+          <li>Legada: <code>/api/search/&lt;game&gt;</code> redireciona para a variante com query.</li>
+          <li>URL do IG (sem filtros): <code>https://www.instant-gaming.com/pt/pesquisar/?query=QUERY</code></li>
+        </ul>
+
+        <h3>Resposta</h3>
+        <pre><code>
+[
+	{
+		"link": "https://www.instant-gaming.com/pt/awdadwadwd",
+		"origin": "Instant Gaming",
+		"price": "R$ 25,67",
+		"title": awd"
+	},
+	{
+		"link": "https://www.instant-gaming.com/pt/awdadwadwad",
+		"origin": "Instant Gaming",
+		"price": "R$ 158,47",
+		"title": "awd"
+	},
+	{
+		"link": "https://www.instant-gaming.com/pt/awdadwad",
+		"origin": "Instant Gaming",
+		"price": "R$ 11,03",
+		"title": "awd"
+	},
+	{
+		"link": "https://www.instant-gaming.com/pt/awdawdawda",
+		"origin": "Instant Gaming",
+		"price": "R$ 20,50",
+		"title": "awd"
+	}
+]
+</code></pre>
+        <p>Resultados vazios: <code>[]</code>. Falta de query retorna <code>{"error":"Missing 'query' parameter"}</code> com HTTP 400.</p>
+
+        <h3>Exemplos</h3>
+        <pre><code id="example-pt"></code></pre>
+
+        <h3>Desempenho & Comportamento</h3>
+        <ul>
+          <li>Reutiliza conexões com <code>requests.Session</code>.</li>
+          <li>Enriquecimento LATAM opcional via requisições concorrentes.</li>
+          <li>Timeouts: <code>20s</code> busca, <code>12s</code> produtos.</li>
+          <li>Filtros (platform/type/gametype) desativados por enquanto.</li>
+          <li>Moeda pode variar conforme a localidade do deploy.</li>
+        </ul>
+
+        <h3>Estrutura do Projeto</h3>
+        <ul>
+          <li><code>app.py</code> — rotas</li>
+          <li><code>reqs.py</code> — busca/enriquecimento</li>
+          <li><code>templates/</code> — <code>index.html</code>, <code>search.html</code></li>
+          <li><code>static/</code> — assets</li>
+        </ul>
+
+        <h3>Executar Localmente (Windows)</h3>
+        <pre><code>git clone https://github.com/diogolourencodev/latamgaming.git
+cd latamgaming
+python -m venv .venv
+.\\.venv\\Scripts\\Activate.ps1
+pip install -r requirements.txt
+python app.py
+# abrir http://127.0.0.1:5000</code></pre>
+
+        <h3>Deploy (Vercel)</h3>
+        <ul>
+          <li>Conecte o GitHub, importe o repo; Vercel detecta Flask.</li>
+          <li>Defina o root se necessário e faça o deploy; teste o endpoint.</li>
+        </ul>
+
+        <h3>Roadmap</h3>
+        <ul>
+          <li>Reintroduzir filtros (platform/type/gametype).</li>
+          <li>Adicionar <code>POST /api/search</code> com corpo JSON.</li>
+          <li>Cache, paginação, normalização de moeda.</li>
+          <li>UI de <code>/search</code> bilíngue com filtros.</li>
+        </ul>
+      </section>
+
+      <hr />
+      <p>
+        Health route: <code>/health</code> · Search UI: <code>/search</code>
+      </p>
+    </main>
+
+    <script>
+      const origin = window.location.origin;
+      const exampleEn = document.getElementById('example-en');
+      const examplePt = document.getElementById('example-pt');
+      const q = encodeURIComponent('elden ring');
+      exampleEn.textContent = `curl "${origin}/api/search?query=${q}"\ncurl "${origin}/api/search?query=${q}&latam_priority=0"`
+      examplePt.textContent = `curl "${origin}/api/search?query=${q}"\n` +
+        `curl "${origin}/api/search?query=${q}&latam_priority=0"`;
+
+      const en = document.getElementById('doc-en');
+      const pt = document.getElementById('doc-pt');
+      document.getElementById('btn-en').onclick = () => { en.style.display = 'block'; pt.style.display = 'none'; };
+      document.getElementById('btn-pt').onclick = () => { en.style.display = 'none'; pt.style.display = 'block'; };
+    </script>
+  </body>
+  </html>

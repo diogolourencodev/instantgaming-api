@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="{{ 'pt-br' if lang == 'pt' else 'en' }}">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{{ title }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+  </head>
+  <body>
+    <main>
+      <div class="banner">
+        <div class="lang-toggle">
+          <a href="{{ url_for('search_game', lang='pt') }}" class="lang-btn {{ 'active' if lang=='pt' else '' }}">{{ t.lang_pt }}</a>
+          <a href="{{ url_for('search_game', lang='en') }}" class="lang-btn {{ 'active' if lang=='en' else '' }}">{{ t.lang_en }}</a>
+        </div>
+        <h1>{{ title }}</h1>
+        <p class="banner-subtitle">{{ t.subtitle }}</p>
+        <p>{{ t.obs }}</p>
+      </div>
+
+      <div class="search-container">
+        <div class="search-box">
+          <input type="text" name="query" required id="query-search" placeholder="{{ t.input_placeholder }}">
+          <button id="search-btn" type="submit">{{ t.search_button }}</button>
+        </div>
+      </div>
+
+      <div class="games-grid" id="div-result-games">
+      </div>
+
+      <div id="loading-message" class="loading hidden">
+        <div class="spinner"></div>
+        <p>{{ t.loading_text }}</p>
+      </div>
+    </main>
+
+    <footer class="site-footer">
+      <p>{{ t.credits_by }} <a href="https://github.com/diogolourencodev" target="_blank" rel="noopener">github.com/diogolourencodev</a></p>
+    </footer>
+
+    <script>
+      const searchBtn = document.getElementById('search-btn');
+      const queryInput = document.getElementById('query-search');
+      const resultDiv = document.getElementById('div-result-games');
+      const loadingMessage = document.getElementById('loading-message');
+
+      function extractPriceValue(priceString) {
+        if (!priceString) return Infinity;
+        
+        const cleanPrice = priceString.replace(/[^\d,.]/g, '').replace(',', '.');
+        const price = parseFloat(cleanPrice);
+        
+        return isNaN(price) ? Infinity : price;
+      }
+
+      function sortGamesByPrice(games) {
+        return games.sort((a, b) => {
+          const priceA = extractPriceValue(a.price);
+          const priceB = extractPriceValue(b.price);
+          return priceA - priceB;
+        });
+      }
+
+      async function searchGame(query) {
+        const apiUrl = `/api/search/${encodeURIComponent(query)}`;
+        
+        try {
+          loadingMessage.classList.remove('hidden');
+          resultDiv.innerHTML = '';
+
+          const response = await fetch(apiUrl);
+          const data = await response.json();
+
+          loadingMessage.classList.add('hidden');
+
+          if (!data || data.length === 0) {
+            resultDiv.innerHTML = `
+              <div class="no-results">
+                <p>{{ t.no_results_title }} "${query}"</p>
+                <p>{{ t.no_results_tip }}</p>
+              </div>
+            `;
+            
+            return;
+          }
+
+          const sortedGames = sortGamesByPrice(data);
+
+          resultDiv.innerHTML = '';
+
+          sortedGames.forEach((game, index) => {
+            const gameEl = document.createElement('div');
+            gameEl.className = 'game-card';
+            gameEl.innerHTML = `
+              <a href="${game.link}" target="_blank" class="game-link">
+                <div class="game-card-content">
+                  <div class="game-info">
+                    <h3 class="game-title">${game.title}</h3>
+                    <div class="game-details">
+                      <span class="game-price ${extractPriceValue(game.price) === 0 ? 'free' : ''}">
+                        ${game.price}
+                      </span>
+                      <span class="game-origin">${game.origin}</span>
+                    </div>
+                  </div>
+                </div>
+              </a>
+            `;
+            resultDiv.appendChild(gameEl);
+          });
+
+        } catch (error) {
+          console.error('Erro na pesquisa: ', error);
+          loadingMessage.classList.add('hidden');
+          resultDiv.innerHTML = `
+            <div class="error-message">
+              <p>{{ t.error_unexpected }}</p>
+            </div>
+          `;
+        }
+      }
+
+      searchBtn.addEventListener('click', () => {
+        const query = queryInput.value.trim();
+        if (query) {
+          searchGame(query);
+        }
+      });
+
+      queryInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+          const query = queryInput.value.trim();
+          if (query) {
+            searchGame(query);
+          }
+        }
+      });
+    </script>
+  </body>
+</html>
