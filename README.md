@@ -1,129 +1,171 @@
 # Instant Gaming API
 
-Open-source, non-profit API to search game prices on Instant Gaming, prioritizing "Latin America" pricing when available.
+Open-source, non-profit API and UI to search game prices on Instant Gaming, optionally prioritizing Latin America pricing when available.
 
-Deploy: https://instantgaming.vercel.app (if configured)
+Base URL (local): `http://127.0.0.1:5000`
+Base URL (Vercel): `https://instantgaming.vercel.app` (if deployed)
 
-## About
+---
 
-This is an open-source and non-profit project that provides a simple API to query game prices on Instant Gaming. When available, it prioritizes the "Latin America" region pricing, often surfacing BRL.
+## English (EN)
 
-Note: Vercel servers are not located in Latin America. Results may differ from local BRL pricing when running in Vercel. For more consistent BRL results, run locally.
+### Overview
 
-## Features
+- Purpose: Query Instant Gaming search results using only a query string, optionally enriching with Latin America prices.
+- Framework: Flask · Entry: `app.py` · Templates: `templates/` · Static: `static/` · Logic: `reqs.py`
+- Language policy: Requests use English headers (`Accept-Language: en-US,en;q=0.9`).
+- Note: When running on Vercel, pricing may reflect a different locale; for consistent BRL, run locally.
 
-- Search API: `GET /api/search/<query>` with optional filters
-- Web UI at `/search` with client-side price sorting
-- English API parameters and responses
-- Multi-platform search using Instant Gaming filters
-- Responsive interface (desktop and mobile)
+### Routes
 
-## Supported Platforms (IG keys)
+- `GET /` — Home with embedded bilingual docs.
+- `GET /search` — UI page to search games.
+- `GET /health` — Health check.
 
-- `steam`
-- `epic+games`
-- `battle.net`
-- `gog.com`
-- `microsoft+store`
-- `playstation+store`
-- `nintendo+eshop`
-- `ea+app`
-- `ubisoft+connect`
-- `rockstar`
-- `ncsoft`
-- `instant+gaming`
-- `other`
+### API Endpoint
 
-## API Endpoint
+`GET /api/search?query=QUERY`
 
-### GET `/api/search/<query>`
-
-Quick search with optional filters.
-
-Path parameter:
-
-- `query`: game name (URL-encoded, e.g., `elden%20ring`).
-
-Optional query parameters (English):
-
-- `platform`: IG platform key (e.g., `steam`, `epic+games`). Empty means no platform filter.
-- `type`: IG type key (e.g., `games`, `games-and-dlc`). Empty means no type filter.
-- `gametype`: IG gametype (e.g., `games`, `all`). Empty means no gametype filter.
-- `latam_priority`: `1` (default) to enrich prices by fetching product pages; `0` to skip for speed.
-- `max_details`: how many items to enrich with LATAM pricing (default `6`).
-- `concurrency`: number of concurrent detail fetches (default `6`).
-
-Default IG URL when `platform` and `type` are empty:
-`https://www.instant-gaming.com/pt/pesquisar/?platform[]=PLATAFORMA&type[]=TIPO&gametype=&query=QUERY`
+- Query parameters:
+  - `query` (string, required): game name (e.g., `elden ring`).
+  - `latam_priority` (optional): `1` (default) enriches results by checking product pages; `0` skips for speed.
+  - `max_details` (optional, integer): number of items to enrich when `latam_priority=1` (default `6`).
+  - `concurrency` (optional, integer): concurrency level for enrichment (default `6`).
+- Legacy route: `GET /api/search/<game>` — Redirects to `GET /api/search?query=<game>`.
 
 Examples:
 
 ```bash
-# Simple search
-curl "http://127.0.0.1:5000/api/search/elden%20ring"
+# Local
+curl "http://127.0.0.1:5000/api/search?query=elden%20ring"
 
-# With filters (English)
-curl "http://127.0.0.1:5000/api/search/elden%20ring?platform=steam&type=games&gametype=games"
+# Faster (skip LATAM enrichment)
+curl "http://127.0.0.1:5000/api/search?query=elden%20ring&latam_priority=0"
 
-# Faster (skip LATAM), still English params
-curl "http://127.0.0.1:5000/api/search/elden%20ring?latam_priority=0"
+# Adjust concurrency and max enriched items
+curl "http://127.0.0.1:5000/api/search?query=elden%20ring&concurrency=4&max_details=4"
 ```
 
-## Run Locally
+### Run Locally (Windows)
 
 ```powershell
-# 1) Clone the repository
 git clone https://github.com/diogolourencodev/latamgaming.git
 cd latamgaming
-
-# 2) Create virtual environment
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
-
-# 3) Install dependencies
 pip install -r requirements.txt
-
-# 4) Start the server
 python app.py
-
-# 5) Open in browser
-# http://127.0.0.1:5000
+# open http://127.0.0.1:5000
 ```
 
-## Project Structure
+### Project Structure
 
 ```
-instant-gaming-api/
-├── app.py              # Flask application
-├── reqs.py             # Instant Gaming search logic
+instantgaming-api/
+├── app.py              # Flask app and route definitions
+├── reqs.py             # Search implementation and enrichment logic
 ├── requirements.txt    # Python dependencies
-├── docs.md             # Detailed API documentation (English)
+├── docs.md             # Detailed documentation (EN and PT-BR)
 ├── static/
 │   └── style.css       # Web UI styles
 └── templates/
-    ├── index.html      # Landing page
-    └── search.html     # Search interface
+    ├── index.html      # Embedded docs (EN/PT)
+    └── search.html     # Search UI
 ```
 
-## Full Docs
+### Full Docs
 
-For detailed API docs, usage examples, and behavior, see `docs.md`.
+For complete details, examples, and behavior notes, see `docs.md`.
 
-## Contributing
+---
 
-This is an open-source project. Contributions are welcome:
+## Português (PT-BR)
 
-1. Fork this repository
-2. Create a feature branch (`git checkout -b feature/new-feature`)
-3. Commit your changes (`git commit -am "Add new feature"`)
-4. Push the branch (`git push origin feature/new-feature`)
-5. Open a Pull Request
+### Visão Geral
 
-## License
+- Propósito: Consultar resultados de busca da Instant Gaming usando apenas a string de pesquisa, enriquecendo opcionalmente com preços da América Latina.
+- Framework: Flask · Entrada: `app.py` · Templates: `templates/` · Estáticos: `static/` · Lógica: `reqs.py`
+- Política de idioma: Requisições usam cabeçalhos em inglês (`Accept-Language: en-US,en;q=0.9`).
+- Observação: Em Vercel, os preços podem refletir outra localidade; para BRL consistente, execute localmente.
+
+### Rotas
+
+- `GET /` — Página inicial com docs bilíngues.
+- `GET /search` — Página de busca de jogos.
+- `GET /health` — Verificação de saúde.
+
+### Endpoint da API
+
+`GET /api/search?query=QUERY`
+
+- Parâmetros de consulta:
+  - `query` (string, obrigatório): nome do jogo (ex.: `elden ring`).
+  - `latam_priority` (opcional): `1` (padrão) enriquece resultados checando páginas de produto; `0` evita por desempenho.
+  - `max_details` (opcional, inteiro): quantidade de itens enriquecidos quando `latam_priority=1` (padrão `6`).
+  - `concurrency` (opcional, inteiro): nível de concorrência para enriquecimento (padrão `6`).
+- Rota legada: `GET /api/search/<game>` — Redireciona para `GET /api/search?query=<game>`.
+
+Exemplos:
+
+```bash
+# Local
+curl "http://127.0.0.1:5000/api/search?query=elden%20ring"
+
+# Mais rápido (sem enriquecimento LATAM)
+curl "http://127.0.0.1:5000/api/search?query=elden%20ring&latam_priority=0"
+
+# Ajustar concorrência e itens enriquecidos
+curl "http://127.0.0.1:5000/api/search?query=elden%20ring&concurrency=4&max_details=4"
+```
+
+### Executar Localmente (Windows)
+
+```powershell
+git clone https://github.com/diogolourencodev/latamgaming.git
+cd latamgaming
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+python app.py
+# abrir http://127.0.0.1:5000
+```
+
+### Estrutura do Projeto
+
+```
+instantgaming-api/
+├── app.py              # Aplicação Flask e rotas
+├── reqs.py             # Implementação da busca e enriquecimento
+├── requirements.txt    # Dependências Python
+├── docs.md             # Documentação detalhada (EN e PT-BR)
+├── static/
+│   └── style.css       # Estilos da UI web
+└── templates/
+    ├── index.html      # Docs incorporados (EN/PT)
+    └── search.html     # UI de busca
+```
+
+### Documentação Completa
+
+Para detalhes completos, exemplos e comportamento, consulte `docs.md`.
+
+---
+
+## Contributing / Contribuição
+
+Contributions are welcome! / Contribuições são bem-vindas!
+
+1. Fork the repository / Faça um fork do repositório
+2. Create a feature branch / Crie uma branch de feature
+3. Commit your changes / Faça o commit
+4. Push the branch / Faça o push
+5. Open a Pull Request / Abra um Pull Request
+
+## License / Licença
 
 Open-source and non-profit. Built for the Brazilian and Latin American gaming community.
 
-## Credits
+## Credits / Créditos
 
 Created by https://github.com/diogolourencodev
 
